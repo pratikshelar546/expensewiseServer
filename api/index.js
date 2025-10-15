@@ -2,15 +2,15 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import bodyParser from "body-parser";
-import expensesAPI from "../routes/expenses/index.js"
-import userAPI from "../routes/user/index.js";
-import organizationAPI from '../routes/organization/index.js';
-import expenseFeildAPI from "../routes/ExpenseField/index.js";
-import requestAPI from "../routes/Request/index.js";
-import privateConfig from "../Config/routeConfig.js";
+import expensesAPI from "../app/routes/expenses/index.js"
+import userAPI from "../app/routes/user/index.js";
+import organizationAPI from '../app/routes/organization/index.js';
+import expenseFeildAPI from "../app/routes/ExpenseField/index.js";
+import requestAPI from "../app/routes/Request/index.js";
+import privateConfig from "../app/Config/routeConfig.js";
 import passport from "passport";
 import session from "express-session";
-import DBConnection from "../DBModel/DBConnection.js";
+import DBConnection from "../app/DBModel/DBConnection.js";
 import serverless from "serverless-http";
 
 dotenv.config();

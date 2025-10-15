@@ -72,7 +72,11 @@ userSchema.methods.matchPassword = function (oldPassword, callback) {
 }
 
 userSchema.statics.findByEmailAndPass = async function (email, password) {
+    console.log("db calling");
+    
     const user = await this.findOne({ email });
+    console.log(user,"user");
+    
     if (!user) throw new Error("USER_NOT_FOUND");
 
     const [salt, hash] = user.password.split(':');

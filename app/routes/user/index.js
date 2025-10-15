@@ -57,6 +57,7 @@ Router.post("/signup", async (req, res) => {
 Router.post("/signin", async (req, res) => {
   try {
     const { email, password } = req.body;
+console.log(email, password,"creds");
 
     if (!email || !password) {
       return res.status(400).json({
@@ -64,6 +65,8 @@ Router.post("/signin", async (req, res) => {
         message: "Email and password are required.",
       });
     }
+    console.log("finding user");
+    
     const user = await userModel.findByEmailAndPass(email, password);
 
     const token = user.genrateJwtToken();
