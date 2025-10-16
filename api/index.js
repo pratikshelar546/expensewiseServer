@@ -15,9 +15,16 @@ import MongoStore from "connect-mongo";
 const app = express();
 
 dotenv.config();
-
-await DBConnection(); // Make sure you cache the connection inside this function
-
+try {
+    console.log("connecting to DB");
+    
+    await DBConnection(); // Make sure you cache the connection inside this function
+    console.log("connected to DB");
+    
+} catch (error) {
+    console.log("error connecting to DB", error);
+}
+    
 privateConfig(passport);
 app.use(express.json());
 
