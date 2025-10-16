@@ -65,18 +65,7 @@ app.use("/organization", organizationAPI);
 app.use("/field", expenseFeildAPI)
 app.use("/request", requestAPI)
 
-app.use(async (req, res, next) => {
-    try {
-        console.log("connecting to DB");
 
-        console.log("connected");
-
-        next();
-    } catch (err) {
-        console.error("❌ DB Connect error:", err);
-        res.status(500).json({ error: "DB connection failed" });
-    }
-});
 app.get("/ping", (req, res) => {
     console.log("pingggggggg");
 

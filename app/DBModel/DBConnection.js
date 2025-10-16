@@ -7,6 +7,7 @@ if (!cached) {
 }
 
 async function DBConnection() {
+    console.log("cache cheking ",cached.conn);
   if (cached.conn) return cached.conn;
 
   if (!cached.promise) {
