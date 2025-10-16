@@ -41,8 +41,10 @@ app.use(session({
         ttl: 14 * 24 * 60 * 60, // 14 days
     }),
     cookie: {
-        secure: process.env.NODE_ENV === "production", // only send over HTTPS
-        maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        httpOnly: true,
+        maxAge: 14 * 24 * 60 * 60 * 1000,
     }
 }));
 app.use((req, res, next) => {
