@@ -26,6 +26,18 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(session({ secret: "newProject" }));
 app.use(bodyParser.json());
+
+// Initialize database connection before routes
+app.use(async (req, res, next) => {
+  try {
+    await DBConnect();
+    next();
+  } catch (error) {
+    console.error("Database connection error:", error);
+    res.status(500).json({ error: "Database connection failed" });
+  }
+});
+
 app.use("/expenses", expensesAPI);
 app.use("/user", userAPI);
 app.use("/organization", organizationAPI);
@@ -39,12 +51,12 @@ app.get('/', (req, res) => {
   res.send('Backend is running!');
 });
 
+// For Vercel deployment
+export default app;
 
-app.listen(5000, "0.0.0.0",() => {
-    DBConnect().then(() => {
-        console.log("server connected");
-    }).catch((error) => {
-        console.error(error);
-    })
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(5000, "0.0.0.0", () => {
     console.log(`Server Started at ${5000}`)
-})
+  })
+}

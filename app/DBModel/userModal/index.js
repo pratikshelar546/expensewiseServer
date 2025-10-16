@@ -79,6 +79,12 @@ userSchema.statics.findByEmailAndPass = async function (email, password) {
     
     if (!user) throw new Error("USER_NOT_FOUND");
 
+    // Check if password is in the correct format (salt:hash)
+    if (!user.password.includes(':')) {
+        console.log("Password format error - not hashed properly");
+        throw new Error("INVALID_CREDENTIALS");
+    }
+
     const [salt, hash] = user.password.split(':');
     const derivedKey = await new Promise((resolve, reject) => {
         crypto.scrypt(String(password), salt, 64, (error, key) => {

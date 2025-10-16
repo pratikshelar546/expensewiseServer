@@ -57,7 +57,7 @@ Router.post("/signup", async (req, res) => {
 Router.post("/signin", async (req, res) => {
   try {
     const { email, password } = req.body;
-console.log(email, password,"creds");
+    console.log(email, password,"creds");
 
     if (!email || !password) {
       return res.status(400).json({
@@ -68,8 +68,10 @@ console.log(email, password,"creds");
     console.log("finding user");
     
     const user = await userModel.findByEmailAndPass(email, password);
+    console.log("User found:", user ? "Yes" : "No");
 
     const token = user.genrateJwtToken();
+    console.log("Token generated successfully");
 
     return res.status(200).json({
       success: true,
@@ -83,6 +85,7 @@ console.log(email, password,"creds");
     });
 
   } catch (error) {
+    console.error("Signin error:", error.message);
     const message = error.message;
 
     if (message === "USER_NOT_FOUND") {
@@ -102,6 +105,7 @@ console.log(email, password,"creds");
     return res.status(500).json({
       success: false,
       message: "Something went wrong. Please try again.",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
