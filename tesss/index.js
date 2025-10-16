@@ -77,6 +77,17 @@ app.get("/health", (req, res) => {
     });
 });
 
+// Debug endpoint for Vercel troubleshooting
+app.get("/debug", (req, res) => {
+    res.status(200).json({
+        message: "Debug endpoint working",
+        timestamp: new Date().toISOString(),
+        userAgent: req.get('User-Agent'),
+        ip: req.ip,
+        headers: req.headers
+    });
+});
+
 // Ensure DB connection on each request (for Vercel serverless)
 app.use(async (req, res, next) => {
     try {
@@ -148,5 +159,8 @@ const handler = serverless(app, {
     }
 });
 
+// Export for Vercel
 export default handler;
+
+// Also export the app for local development
 export { app };
