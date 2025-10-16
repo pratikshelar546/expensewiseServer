@@ -16,25 +16,8 @@ const app = express();
 
 dotenv.config();
 
-// Initialize database connection with timeout
-const initializeDB = async () => {
-    try {
-        console.log("connecting to DB");
-        await Promise.race([
-            DBConnection(),
-            new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('DB connection timeout')), 10000)
-            )
-        ]);
-        console.log("connected to DB");
-    } catch (error) {
-        console.log("error connecting to DB", error);
-        // Don't fail the entire app, just log the error
-    }
-};
-
-// Initialize DB but don't block the app startup
-initializeDB();
+// Don't initialize DB on startup - let it connect on first request
+// This prevents Vercel timeout issues during cold starts
 
 privateConfig(passport);
 app.use(express.json());
@@ -73,9 +56,39 @@ if (process.env.MONGODB) {
 }
 
 app.use(session(sessionConfig));
-app.use((req, res, next) => {
-    console.log(`Received request with body size: ${JSON.stringify(req.body).length} bytes`);
-    next();
+
+// Simple health check that doesn't require DB (put before DB middleware)
+app.get("/ping", (req, res) => {
+    console.log("pingggggggg");
+    res.send("pong");
+});
+
+// Health check endpoint for Vercel
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "ok",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        env: {
+            nodeEnv: process.env.NODE_ENV,
+            hasMongoDb: !!process.env.MONGODB,
+            mongoDbLength: process.env.MONGODB ? process.env.MONGODB.length : 0
+        }
+    });
+});
+
+// Ensure DB connection on each request (for Vercel serverless)
+app.use(async (req, res, next) => {
+    try {
+        console.log(`Received request with body size: ${JSON.stringify(req.body).length} bytes`);
+        // Ensure DB is connected on each request
+        await DBConnection();
+        next();
+    } catch (error) {
+        console.error('DB connection error in middleware:', error);
+        // Continue anyway - some routes might not need DB
+        next();
+    }
 });
 
 app.use("/expenses", expensesAPI);
@@ -83,13 +96,6 @@ app.use("/user", userAPI);
 app.use("/organization", organizationAPI);
 app.use("/field", expenseFeildAPI)
 app.use("/request", requestAPI)
-
-
-app.get("/ping", (req, res) => {
-    console.log("pingggggggg");
-
-    res.send("pong");
-});
 
 app.get("/", (req, res) => {
     if (!req.session.views) req.session.views = 0;
@@ -115,12 +121,24 @@ app.use((req, res) => {
     });
 });
 
-// Configure serverless with proper timeout
+// Configure serverless handler for Vercel
 const handler = serverless(app, {
     binary: false,
     request: (request, event, context) => {
-        // Set timeout for Vercel (max 10 seconds for hobby plan)
+        // Vercel serverless configuration
         context.callbackWaitsForEmptyEventLoop = false;
+        
+        // Set reasonable timeout
+        const timeoutId = setTimeout(() => {
+            throw new Error('Function timeout');
+        }, 25000); // 25 seconds (Vercel Pro limit)
+        
+        // Clear timeout when response is sent
+        const originalEnd = request.end;
+        request.end = function(...args) {
+            clearTimeout(timeoutId);
+            return originalEnd.apply(this, args);
+        };
     }
 });
 
