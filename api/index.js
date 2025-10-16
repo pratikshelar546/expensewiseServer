@@ -57,7 +57,7 @@ if (process.env.MONGODB) {
 
 app.use(session(sessionConfig));
 
-// Simple health check that doesn't require DB (put before DB middleware)
+// Simple health check that doesn't require DB (MUST be before DB middleware)
 app.get("/ping", (req, res) => {
     console.log("pingggggggg");
     res.send("pong");
@@ -120,25 +120,31 @@ app.use((req, res) => {
         message: 'Route not found' 
     });
 });
+// Simple health check that doesn't require DB (put before DB middleware)
+app.get("/ping", (req, res) => {
+    console.log("pingggggggg");
+    res.send("pong");
+});
 
+// Health check endpoint for Vercel
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "ok",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        env: {
+            nodeEnv: process.env.NODE_ENV,
+            hasMongoDb: !!process.env.MONGODB,
+            mongoDbLength: process.env.MONGODB ? process.env.MONGODB.length : 0
+        }
+    });
+});
 // Configure serverless handler for Vercel
 const handler = serverless(app, {
     binary: false,
     request: (request, event, context) => {
         // Vercel serverless configuration
         context.callbackWaitsForEmptyEventLoop = false;
-        
-        // Set reasonable timeout
-        const timeoutId = setTimeout(() => {
-            throw new Error('Function timeout');
-        }, 25000); // 25 seconds (Vercel Pro limit)
-        
-        // Clear timeout when response is sent
-        const originalEnd = request.end;
-        request.end = function(...args) {
-            clearTimeout(timeoutId);
-            return originalEnd.apply(this, args);
-        };
     }
 });
 
