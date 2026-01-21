@@ -13,6 +13,8 @@ Router.post("/:id/addexpense", passport.authenticate("jwt", { session: false }),
         const feildExist = await ExpensesFieldModel.findById(id);
         if (!feildExist) return res.status(404).json({ message: "Feild not found first create feild" })
         req.body.feildId = id;
+      req.body.userId = req.user._id;
+      
         const newExpense = await expenseModal.create(req.body);
         return res.status(201).json({ status: "expense Created", newExpense })
     } catch (error) {
@@ -105,7 +107,6 @@ Router.put("/updateExpense/:id", async (req, res) => {
   
       await session.commitTransaction();
       session.endSession();
-  console.log("updatedExpense",updatedExpense)
       return res.status(200).json({
         status: "Expense updated successfully",
         updatedExpense,

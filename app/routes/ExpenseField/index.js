@@ -4,7 +4,9 @@ import { ExpensesFieldModel } from "../../DBModel/ExpenseFieldModel/index.js";
 import { userModel } from "../../DBModel/userModal/index.js";
 import { expenseModal } from "../../DBModel/expenseModal/index.js";
 import mongoose from "mongoose";
+import { FieldanduserModel } from "../../DBModel/RequestModel/index.js";
 const Router = express.Router();
+
 
 // create field
 Router.post(
@@ -16,9 +18,13 @@ Router.post(
       req.body.userId = _id;
 
       const response = await ExpensesFieldModel.create(req.body);
+      await FieldanduserModel.create({
+        user: _id,
+        field: response._id,
+      });
       return res
         .status(200)
-        .json({ message: "field created", response, success: true });
+        .json({ message: "Expensefield created", response, success: true });
     } catch (error) {
       return res.status(400).json({ message: error.message, sucess: false });
     }
@@ -50,13 +56,46 @@ Router.get(
         query.fieldType = { $ne: "Primary" };
       }
 
-      const expenseField = await ExpensesFieldModel.find(query);
-
+      const expenseField = await FieldanduserModel.aggregate([
+        {
+          $match: {
+            user: new mongoose.Types.ObjectId(_id)
+          }
+        },
+        {
+          $unwind: {
+            path: "$field",
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: "expensefields",
+            localField: "field",
+            foreignField: "_id",
+            as: "expensefields"
+          }
+        },
+        {
+          $unwind: {
+            path: "$expensefields",
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $project:{
+            expensefields:1
+          }
+        }
+      ]);
+      
       if (expenseField.length === 0)
         return res.status(404).json({ message: "Add Expese field " });
 
       return res.status(202).json({ expenseField, success: true });
     } catch (error) {
+      console.log(error,"error");
+      
       return res.status(400).json({ message: error.message });
     }
   }
@@ -84,15 +123,59 @@ Router.get(
             as: "expenses",
           },
         },
+        {
+          $unwind: {
+            path: "$expenses",
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "expenses.userId",
+            foreignField: "_id",
+            as: "user",
+          }
+        },
+        {
+          $unwind: {
+            path: "$user",
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $addFields: {
+            "expenses.userName": "$user.name"
+          }
+        },
+        {
+          $group: {
+            _id: "$_id",
+            doc: { $first: "$$ROOT" },
+            expenses: { $push: "$expenses" }
+          }
+        },
+        {
+          $replaceRoot: {
+            newRoot: {
+              $mergeObjects: [
+                "$doc",
+                { expenses: "$expenses" }
+              ]
+            }
+          }
+        }
       ]);
       return res
         .status(200)
         .json({
           field: field[0],
           success: true,
-          message: "Fetched expense list by field id",
+          message: "Expenses fetched successfully",
         });
     } catch (error) {
+      console.log(error,"error");
+      
       return res.status(400).json({ message: error.message });
     }
   }
@@ -115,6 +198,7 @@ Router.post(
         price,
         date: date,
         fieldId: fieldId,
+        userId: _id,
       });
 
       const field = await ExpensesFieldModel.findById(fieldId);
@@ -360,4 +444,7 @@ Router.put(
     }
   }
 );
+
+
+// migrateData();
 export default Router;

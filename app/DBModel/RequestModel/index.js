@@ -1,23 +1,21 @@
 import mongoose from "mongoose";
 
-const requestSchema = new mongoose.Schema({
-    fieldName: { type: String },
-    userId: {
+const fieldanduserSchema = new mongoose.Schema({
+    user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "user",
     },
-    requesedBy: {
+    addedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "user",
     },
-    teamFieldId: {
+
+    field: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "ExpenseField",
     },
-    sanctionAmount: { type: Number },
-    role: { type: String },
 }, {
     timestamps: true
 });
 
-export const RequestModel = mongoose.model("requestfield", requestSchema)
+export const FieldanduserModel = mongoose.model("fieldanduser", fieldanduserSchema)

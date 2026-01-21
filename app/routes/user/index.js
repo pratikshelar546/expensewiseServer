@@ -35,6 +35,7 @@ async function addUSerToOrg(userID) {
 
 
 Router.post("/signup", async (req, res) => {
+  
   try {
     const emailExist = await userModel.findByEmail(req, res);
     if (emailExist !== undefined) {
