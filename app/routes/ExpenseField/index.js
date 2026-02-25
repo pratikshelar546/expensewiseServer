@@ -109,19 +109,43 @@ Router.get(
   async (req, res) => {
     const { fieldId } = req.params;
     try {
+      // Fetch the field by ID, get members from fieldandusers/participants,
+      // then join expenses and for each expense join the user for username
       const field = await ExpensesFieldModel.aggregate([
         {
           $match: {
-            _id: new mongoose.Types.ObjectId(fieldId),
-          },
+            _id: new mongoose.Types.ObjectId(fieldId)
+          }
         },
+        // Lookup participants in fieldandusers collection
+        {
+          $lookup: {
+            from: "fieldandusers",
+            localField: "_id",
+            foreignField: "field",
+            as: "participants"
+          }
+        },
+        // Map participants to get just the userId as string
+        {
+          $addFields: {
+            participants: {
+              $map: {
+                input: "$participants",
+                as: "p",
+                in: { $toString: "$$p.user" }
+              }
+            }
+          }
+        },
+        // Get the expenses for this field
         {
           $lookup: {
             from: "expenses",
             localField: "_id",
             foreignField: "fieldId",
-            as: "expenses",
-          },
+            as: "expenses"
+          }
         },
         {
           $unwind: {
@@ -129,39 +153,40 @@ Router.get(
             preserveNullAndEmptyArrays: true
           }
         },
+        // Join each expense's userId to the user to show username
         {
           $lookup: {
             from: "users",
             localField: "expenses.userId",
             foreignField: "_id",
-            as: "user",
+            as: "expenseUser"
           }
         },
         {
           $unwind: {
-            path: "$user",
+            path: "$expenseUser",
             preserveNullAndEmptyArrays: true
           }
         },
-        {
-          $addFields: {
-            "expenses.userName": "$user.name"
-          }
-        },
+        // Re-group expenses with username included
         {
           $group: {
             _id: "$_id",
-            doc: { $first: "$$ROOT" },
-            expenses: { $push: "$expenses" }
-          }
-        },
-        {
-          $replaceRoot: {
-            newRoot: {
-              $mergeObjects: [
-                "$doc",
-                { expenses: "$expenses" }
-              ]
+            fieldName: { $first: "$fieldName" },
+            fieldType: { $first: "$fieldType" },
+            RecivedAmount: { $first: "$RecivedAmount" },
+            balance: { $first: "$balance" },
+            participants: { $first: "$participants" }, // array of userId strings
+            expenses: {
+              $push: {
+                _id: "$expenses._id",
+                desc: "$expenses.desc",
+                category: "$expenses.category",
+                price: "$expenses.price",
+                date: "$expenses.date",
+                userId: "$expenses.userId",
+                userName: "$expenseUser.name"
+              }
             }
           }
         }

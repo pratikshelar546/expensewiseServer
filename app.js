@@ -53,10 +53,10 @@ app.get('/', (req, res) => {
 
 // For Vercel deployment
 export default app;
-
+const PORT = process.env.PORT || 5000;
 // For local development
 if (process.env.NODE_ENV !== 'production') {
-  app.listen(5000, "0.0.0.0", () => {
-    console.log(`Server Started at ${5000}`)
+  app.listen(PORT, () => {
+    console.log(`Server Started at ${PORT}`)
   })
 }
