@@ -83,6 +83,11 @@ Router.get(
           }
         },
         {
+          $match: {
+            "expensefields.fieldType":query.fieldType
+          }
+        },
+        {
           $project:{
             expensefields:1
           }
