@@ -65,7 +65,6 @@ Router.get(
         {
           $unwind: {
             path: "$field",
-            preserveNullAndEmptyArrays: true
           }
         },
         {
@@ -79,7 +78,6 @@ Router.get(
         {
           $unwind: {
             path: "$expensefields",
-            preserveNullAndEmptyArrays: true
           }
         },
         {
