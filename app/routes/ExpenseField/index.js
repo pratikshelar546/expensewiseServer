@@ -438,6 +438,7 @@ Router.delete(
         return res.status(404).json({ message: "Feild does not exist" });
 
       await ExpensesFieldModel.findByIdAndDelete(id);
+      await FieldanduserModel.deleteMany({ field: id });
       return res.status(200).json({ message: "Field deleted successfully" });
     } catch (error) {
       return res.status(400).json({ message: error.message });
