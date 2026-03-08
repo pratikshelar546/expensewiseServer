@@ -48,3 +48,40 @@ async function DBConnection() {
 }
 
 export default DBConnection;
+
+
+
+
+/**
+ * Normal Connection Logic
+ * No global caching, just a straight-up connection request.
+*/
+// async function DBConnection() {
+//   const MONGODB_URI = process.env.MONGODB;
+  
+// if (!MONGODB_URI) {
+//   throw new Error("Please define the MONGODB environment variable in .env");
+
+// }
+//   try {
+//     // Check if we are already connected (Mongoose state 1 = connected)
+//     if (mongoose.connection.readyState === 1) {
+//       return mongoose.connection;
+//     }
+
+//     const opts = {
+//       bufferCommands: false,
+//     };
+
+//     console.log("Establishing fresh MongoDB connection...");
+//     const conn = await mongoose.connect(MONGODB_URI, opts);
+    
+//     console.log("✅ Connected");
+//     return conn;
+//   } catch (error) {
+//     console.error("❌ MongoDB connection error:", error);
+//     throw error;
+//   }
+// }
+
+// export default DBConnection;
