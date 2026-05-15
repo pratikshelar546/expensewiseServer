@@ -18,12 +18,14 @@ async function DBConnection() {
 
   if (!cached.promise) {
     console.log("Creating new connection");
+    
     const opts = {
       bufferCommands: false,
-      maxPoolSize: 10,
+      maxPoolSize: 5,          // ✅ lowered — serverless doesn't need 10
+      minPoolSize: 1,          // ✅ keep 1 alive to reduce reconnects  
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
-      family: 4
+      family: 4,
     };
 
     cached.promise = mongoose.connect(process.env.MONGODB, opts)
