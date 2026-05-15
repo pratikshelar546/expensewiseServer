@@ -108,9 +108,8 @@ app.get("/", (req, res) => {
   res.send("Backend is running!");
 });
 
-export default app;
-
 const PORT = process.env.PORT || 5000;
-if (process.env.NODE_ENV !== "production") {
+// if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, () => console.log(`Server started at ${PORT}`));
-}
+// }
+export default app;
