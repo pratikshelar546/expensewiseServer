@@ -9,15 +9,15 @@ if (!cached) {
 }
 
 async function DBConnection() {
-  console.log("cache checking", cached.conn ? "connected" : "not connected");
+  console.error("cache checking", cached.conn ? "connected" : "not connected");
 
   if (cached.conn) {
-    console.log("Using cached connection");
+    console.error("Using cached connection");
     return cached.conn;
   }
 
   if (!cached.promise) {
-    console.log("Creating new connection");
+    console.error("Creating new connection");
     
     const opts = {
       bufferCommands: false,
@@ -30,7 +30,7 @@ async function DBConnection() {
 
     cached.promise = mongoose.connect(process.env.MONGODB, opts)
       .then((mongoose) => {
-        console.log("✅ Connected to MongoDB");
+        console.error("✅ Connected to MongoDB");
         return mongoose;
       })
       .catch((error) => {
@@ -75,10 +75,10 @@ export default DBConnection;
 //       bufferCommands: false,
 //     };
 
-//     console.log("Establishing fresh MongoDB connection...");
+//     console.error("Establishing fresh MongoDB connection...");
 //     const conn = await mongoose.connect(MONGODB_URI, opts);
     
-//     console.log("✅ Connected");
+//     console.error("✅ Connected");
 //     return conn;
 //   } catch (error) {
 //     console.error("❌ MongoDB connection error:", error);
