@@ -26,7 +26,9 @@ const corsOptions = {
   optionSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
-
+app.get("/", (req, res) => {
+  res.send("Backend is running!");
+});
 // ✅ FIX 1: Reuse the SAME mongoose connection for MongoStore
 // Don't pass mongoUrl — pass the clientPromise from your existing connection
 app.use(

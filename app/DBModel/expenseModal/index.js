@@ -9,8 +9,18 @@ const expensesSchema = new mongoose.Schema(
         },
         category: {
             type: String,
-            required: true,
-
+            enum: [
+                // Legacy
+                'Transport', 'Food', 'Fixed Expense', 'Other Expenses',
+                // Needs
+                'Housing & Rent', 'Groceries', 'Health & Medical', 'Utilities & Bills',
+                // Wants
+                'Shopping', 'Entertainment', 'Personal Care', 'Travel',
+                // Savings
+                'Subscriptions', 'SIP', 'Emergency Fund', 'Fixed Deposit',
+                'Other Investment', 'Education & Learning',
+            ],
+            required: true
         },
         price: {
             type: Number,
