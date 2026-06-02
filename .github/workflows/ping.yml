@@ -1,7 +1,7 @@
 name: Keepserver alive
 
 on: 
-  schedulle:
+  schedule:
     - cron: '*/14 * * * *'
 
 jobs:
