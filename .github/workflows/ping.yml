@@ -1,6 +1,7 @@
-name: Keepserver alive
+name: Keep server alive
 
 on: 
+  workflow_dispatch:
   schedule:
     - cron: '*/14 * * * *'
 
