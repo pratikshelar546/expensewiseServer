@@ -1,0 +1,14 @@
+name: Keepserver alive
+
+on: 
+  schedulle:
+    - cron: '*/14 * * * *'
+
+jobs:
+  ping_server: 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping server
+        run: |
+          curl -s https://expensewiseserver.onrender.com/
+          echo "Pinged at $(date)"
