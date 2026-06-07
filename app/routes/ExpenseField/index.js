@@ -89,6 +89,11 @@ Router.get(
           $project:{
             expensefields:1
           }
+        },
+        {
+          $sort: {
+            "expensefields.createdAt": -1
+          }
         }
       ]);
       
