@@ -7,6 +7,7 @@ import userAPI from "./app/routes/user/index.js";
 import organizationAPI from "./app/routes/organization/index.js";
 import expenseFeildAPI from "./app/routes/ExpenseField/index.js";
 import requestAPI from "./app/routes/Request/index.js";
+import reportsAPI from "./app/routes/reports/index.js";
 import privateConfig from "./app/Config/routeConfig.js";
 import passport from "passport";
 import session from "express-session";
@@ -103,6 +104,7 @@ app.use("/user", userAPI);
 app.use("/organization", organizationAPI);
 app.use("/field", expenseFeildAPI);
 app.use("/request", requestAPI);
+app.use("/reports", reportsAPI);
 
 app.get("/", (req, res) => {
   console.log("Backend is running!");

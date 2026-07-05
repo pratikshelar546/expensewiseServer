@@ -200,11 +200,18 @@ Router.post("/auth", async (req, res) => {
     if (!user) {
       const newUser = await userModel.create(req.body);
       const token = newUser.genrateJwtToken();
-      return res.status(200).json({ message: "Signup successfully", token })
+      return res.status(200).json({
+        message: "Signup successfully",
+        token,
+        userId: newUser._id.toString(),
+      });
     } else {
       const token = user.genrateJwtToken();
-      return res.status(200).json({ message: "Signup successfully", token })
-
+      return res.status(200).json({
+        message: "Signup successfully",
+        token,
+        userId: user._id.toString(),
+      });
     }
 
 
