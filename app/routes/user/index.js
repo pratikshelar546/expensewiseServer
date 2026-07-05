@@ -34,6 +34,42 @@ async function addUSerToOrg(userID) {
 }
 
 
+Router.get(
+  "/check-email",
+  passport.authenticate("jwt", { session: false }),
+  async (req, res) => {
+    try {
+      const email = req.query.email?.trim().toLowerCase();
+      if (!email) {
+        return res.status(400).json({ message: "Email is required", exists: false });
+      }
+
+      const user = await userModel.findOne({
+        email: {
+          $regex: new RegExp(
+            `^${email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+            "i"
+          ),
+        },
+      });
+      if (!user) {
+        return res.status(404).json({
+          exists: false,
+          message: "User does not exist",
+        });
+      }
+
+      return res.status(200).json({
+        exists: true,
+        email: user.email,
+        name: user.name,
+      });
+    } catch (error) {
+      return res.status(400).json({ message: error.message, exists: false });
+    }
+  }
+);
+
 Router.post("/signup", async (req, res) => {
   
   try {

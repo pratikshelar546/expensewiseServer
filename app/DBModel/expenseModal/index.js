@@ -13,7 +13,7 @@ const expensesSchema = new mongoose.Schema(
                 // Legacy
                 'Transport', 'Food', 'Fixed Expense', 'Other Expenses',
                 // Needs
-                'Housing & Rent', 'Groceries', 'Health & Medical', 'Utilities & Bills',
+                'Housing & Rent', 'Groceries', 'Health & Medical', 'Utilities & Bills', 'EMI',
                 // Wants
                 'Shopping', 'Entertainment', 'Personal Care', 'Travel',
                 // Savings

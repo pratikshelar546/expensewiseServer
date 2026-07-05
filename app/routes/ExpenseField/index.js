@@ -7,6 +7,15 @@ import mongoose from "mongoose";
 import { FieldanduserModel } from "../../DBModel/RequestModel/index.js";
 const Router = express.Router();
 
+const findUserByEmail = (email) =>
+  userModel.findOne({
+    email: {
+      $regex: new RegExp(
+        `^${email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+        "i"
+      ),
+    },
+  });
 
 // create field
 Router.post(
@@ -15,13 +24,68 @@ Router.post(
   async (req, res) => {
     try {
       const { _id } = req.user;
-      req.body.userId = _id;
+      const { memberEmails = [], email, ...fieldData } = req.body;
+      fieldData.userId = _id;
 
-      const response = await ExpensesFieldModel.create(req.body);
+      const normalizedEmails = Array.isArray(memberEmails)
+        ? [...new Set(memberEmails.map((e) => e.trim().toLowerCase()).filter(Boolean))]
+        : email
+          ? [email.trim().toLowerCase()]
+          : [];
+
+      if (fieldData.fieldType === "Team" && normalizedEmails.length > 0) {
+        const invalidEmails = [];
+
+        for (const memberEmail of normalizedEmails) {
+          const member = await findUserByEmail(memberEmail);
+          if (!member) {
+            invalidEmails.push(memberEmail);
+          }
+        }
+
+        if (invalidEmails.length > 0) {
+          return res.status(404).json({
+            message: "User does not exist",
+            invalidEmails,
+            success: false,
+          });
+        }
+      }
+
+      const response = await ExpensesFieldModel.create(fieldData);
+
       await FieldanduserModel.create({
         user: _id,
+        addedBy: _id,
         field: response._id,
       });
+
+      if (fieldData.fieldType === "Team" && normalizedEmails.length > 0) {
+        for (const memberEmail of normalizedEmails) {
+          const member = await findUserByEmail(memberEmail);
+          if (!member || member._id.toString() === _id.toString()) continue;
+
+          const alreadyLinked = await FieldanduserModel.findOne({
+            user: member._id,
+            field: response._id,
+          });
+
+          if (!alreadyLinked) {
+            await FieldanduserModel.create({
+              user: member._id,
+              addedBy: _id,
+              field: response._id,
+            });
+          }
+
+          await ExpensesFieldModel.findByIdAndUpdate(response._id, {
+            $addToSet: {
+              members: { memberId: member._id, role: "member" },
+            },
+          });
+        }
+      }
+
       return res
         .status(200)
         .json({ message: "Expensefield created", response, success: true });

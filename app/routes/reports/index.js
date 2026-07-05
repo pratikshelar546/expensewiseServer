@@ -12,7 +12,11 @@ Router.post(
   async (req, res) => {
     try {
       const { _id } = req.user;
-      const { fieldIds = [], includeTeamPools = false } = req.body;
+      const { fieldIds = [], includeTeamPools = false, scope = "overall" } = req.body;
+      const isOverallReport =
+        scope === "overall" ||
+        !Array.isArray(fieldIds) ||
+        fieldIds.length === 0;
 
       const userFieldLinks = await FieldanduserModel.aggregate([
         {
@@ -45,11 +49,15 @@ Router.post(
 
       let pools = userFieldLinks;
 
-      if (!includeTeamPools) {
-        pools = pools.filter((pool) => pool.fieldType !== "Team");
+      const isTeamPool = (pool) =>
+        String(pool.fieldType || "").toLowerCase() === "team";
+
+      // Overall report always excludes team pools
+      if (isOverallReport || !includeTeamPools) {
+        pools = pools.filter((pool) => !isTeamPool(pool));
       }
 
-      if (Array.isArray(fieldIds) && fieldIds.length > 0) {
+      if (!isOverallReport && Array.isArray(fieldIds) && fieldIds.length > 0) {
         const selectedIds = new Set(fieldIds.map((id) => id.toString()));
         pools = pools.filter((pool) => selectedIds.has(pool.fieldId.toString()));
       }
